@@ -187,7 +187,7 @@
            glutInitDisplayMode( GLUT_SINGLE | GLUT_RGBA );
             glutInitWindowSize( screen_width, screen_height );
         glutInitWindowPosition( 100, 100);
-              glutCreateWindow( "Coloring every dot in a triangle using Kary-Tabesh Curve" );
+              glutCreateWindow( "Gourad Shader" );
                           init( );
                glutDisplayFunc( display );
                   glutMainLoop( );
