@@ -124,17 +124,10 @@
             const auto y =
                 edge.start.y;
 
-            if ( minimum_x > x )
-                minimum_x = x;
-
-            if ( minimum_y > y )
-                minimum_y = y;
-
-            if ( maximum_x < x )
-                maximum_x = x;
-
-            if ( maximum_y < y )
-                maximum_y = y;
+            if ( minimum_x > x ) minimum_x = x;
+            if ( minimum_y > y ) minimum_y = y;
+            if ( maximum_x < x ) maximum_x = x;
+            if ( maximum_y < y ) maximum_y = y;
         }
 
         const Triangle_Information result =
