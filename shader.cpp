@@ -4,6 +4,26 @@
 //
 
 //
+// ─── IMPORTS ────────────────────────────────────────────────────────────────────
+//
+
+    #ifdef __APPLE__
+        #include <GLUT/glut.h>
+        #include <stdlib.h>
+    #else
+        #include <GL/glut.h>
+    #endif
+
+    #include <math.h>
+    #include <time.h>
+    #include <iostream>
+    #include <vector>
+
+// ────────────────────────────────────────────────────────────────────────────────
+
+
+
+//
 //   ┌──────────────────────────────────────────────────────────────────────────┐
 //   │ ****************************  View Buffer  ***************************** │
 //   ├──────────────────────────────────────────────────────────────────────────┤
@@ -46,21 +66,6 @@
 //   └──────────────────────────────────────────────────────────────────────────┘
 //
 
-//
-// ─── IMPORTS ────────────────────────────────────────────────────────────────────
-//
-
-    #ifdef __APPLE__
-        #include <GLUT/glut.h>
-        #include <stdlib.h>
-    #else
-        #include <GL/glut.h>
-    #endif
-
-    #include <math.h>
-    #include <time.h>
-    #include <iostream>
-    #include <vector>
 
 //
 // ─── TYPES ──────────────────────────────────────────────────────────────────────
@@ -128,9 +133,12 @@
     const struct RGBA A_Lighting =
         { 1.0, 0.0, 0.0, 1.0 };
     const struct RGBA C_Lighting =
-        { 0.0, 1.0, 0.0, 0.8 };
+        { 0.0, 1.0, 0.0, 1.0};
     const struct RGBA B_Lighting =
-        { 0.0, 0.0, 1.0, 0.5 };
+        { 0.0, 0.0, 1.0, 1.0 };
+
+    const float ambient_light =
+        0.0;
 
 //
 // ─── VECTOR LENGHT ──────────────────────────────────────────────────────────────
@@ -191,14 +199,110 @@
     }
 
 //
+// ─── COMBINE COLORS ─────────────────────────────────────────────────────────────
+//
+
+    RGBA combine_colors ( RGBA color_a, float volume_a, RGBA color_b, float volume_b ) {
+        const auto new_R =
+            ( ( color_a.R * volume_a ) + ( color_b.R * volume_b ) ) / 2;
+        const auto new_G =
+            ( ( color_a.G * volume_a ) + ( color_b.G * volume_b ) ) / 2;
+        const auto new_B =
+            ( ( color_a.B * volume_a ) + ( color_b.B * volume_b ) ) / 2;
+        const auto new_A =
+            ( ( color_a.A * volume_a ) + ( color_b.A * volume_b ) ) / 2;
+
+        const struct RGBA result =
+            { new_R, new_G, new_B, new_A };
+
+        return result;
+    }
+
+//
+// ─── COMPUTE SCANN LINE LIGHTS ──────────────────────────────────────────────────
+//
+
+    RGBA get_RGBA_on_linear_interpolation ( Point position,
+                                            Point up,
+                                            Point down,
+                                            RGBA  up_color,
+                                            RGBA  down_color ) {
+        const auto up_distance =
+            vertex_lenght( up, position );
+        const auto down_distance =
+            vertex_lenght( down, position );
+        const auto up_down_size =
+            vertex_lenght( up, down );
+
+        const auto up_volume =
+            up_distance / up_down_size;
+        const auto down_volume =
+            down_distance / up_down_size;
+
+        const auto new_RGBA =
+            combine_colors( up_color, up_volume, down_color, down_volume );
+
+        return new_RGBA;
+    }
+
+//
+// ─── GET IR ─────────────────────────────────────────────────────────────────────
+//
+
+    RGBA get_IR ( Point position ) {
+        return get_RGBA_on_linear_interpolation( position, A, B, A_Lighting, B_Lighting );
+    }
+
+//
+// ─── COMPUTE IR ─────────────────────────────────────────────────────────────────
+//
+
+    RGBA get_IL ( Point position ) {
+        return get_RGBA_on_linear_interpolation( position, A, C, A_Lighting, C_Lighting );
+    }
+
+//
+// ─── COMPUTE IS ─────────────────────────────────────────────────────────────────
+//
+
+    RGBA get_IS ( Point position, RGBA IL, RGBA IR, Scann_Line_Info scann_line ) {
+        return get_RGBA_on_linear_interpolation(
+            position, scann_line.L, scann_line.R, IL, IR );
+    }
+
+//
+// ─── APPLY AMBIENT LIGHT ────────────────────────────────────────────────────────
+//
+
+    RGBA apply_ambint_light ( RGBA color ) {
+        const struct RGBA result = {
+            color.R + ambient_light,
+            color.G + ambient_light,
+            color.B + ambient_light,
+            color.A
+        };
+
+        return result;
+    }
+
+//
 // ─── COMPUTE COLOR ON POSITION ──────────────────────────────────────────────────
 //
 
     RGBA compute_color_on_position ( float x, float y, Scann_Line_Info scann_line ) {
-        const struct RGBA color =
-            { 1.0, 0.0, 0.0, 1.0 };
+        const struct Point position =
+            { x, y };
+        const auto IL =
+            get_IL( position );
+        const auto IR =
+            get_IR( position );
+        const auto IS =
+            get_IS( position, IL, IR, scann_line );
 
-        return color;
+        const auto color_with_ambint_light =
+            apply_ambint_light( IS );
+
+        return color_with_ambint_light;
     }
 
 //
@@ -207,10 +311,11 @@
 
     void set_color_based_on_position ( float x, float y, Scann_Line_Info line ) {
         if ( line.L.x <= x && line.R.x >= x ) {
-            // const auto color =
-            //     compute_color_on_position( x, y, line );
+            const auto color =
+                compute_color_on_position( x, y, line );
 
-            glColor3f( 1.0, 0.0, 0.0 );
+            glColor4f( color.R, color.G, color.B, color.A );
+
         } else {
             glColor3f( 0.0, 0.0, 0.0 );
         }
@@ -315,10 +420,10 @@
 
     int main ( int argc, char ** argv ) {
                       glutInit( &argc, argv );
-           glutInitDisplayMode( GLUT_SINGLE | GLUT_RGB );
+           glutInitDisplayMode( GLUT_SINGLE | GLUT_RGBA );
             glutInitWindowSize( screen_width, screen_height );
         glutInitWindowPosition( 100, 100);
-              glutCreateWindow( "The Very Basic Gradiant" );
+              glutCreateWindow( "Pouya's Basic Gouraud Shader!" );
                           init( );
                glutDisplayFunc( display );
                   glutMainLoop( );
