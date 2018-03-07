@@ -1,9 +1,9 @@
 
-name = "Kary's Gouraud Shader"
+name = "Pouya's Gouraud Shader"
 file = shader.cpp
 
 build: $(file)
-	g++ -std=c++11 -o $(name) $(file)  -framework OpenGl -framework Glut
+	g++ -std=c++11 -o $(name) $(file) -framework OpenGl -framework Glut
 
 run: build
 	./$(name); rm ./$(name)
