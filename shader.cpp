@@ -310,7 +310,7 @@
             const auto color =
                 compute_color_on_position( x, y, line );
 
-            glColor4f( color.R, color.G, color.B, color.A );
+            glColor3f( color.R, color.G, color.B );
 
         } else {
             glColor3f( 0.0, 0.0, 0.0 );
@@ -406,7 +406,7 @@
 
     int main ( int argc, char ** argv ) {
                       glutInit( &argc, argv );
-           glutInitDisplayMode( GLUT_SINGLE | GLUT_RGBA );
+           glutInitDisplayMode( GLUT_SINGLE | GLUT_RGB );
             glutInitWindowSize( screen_width, screen_height );
         glutInitWindowPosition( 100, 100);
               glutCreateWindow( "Pouya's Basic Gouraud Shader!" );
