@@ -91,10 +91,6 @@
     struct Scann_Line_Info {
         Point L;    // Left  point of intersection in scanning line with triangle
         Point R;    // Right point of intersection in scanning line with triangle
-        float LA;   // Length of L to the A
-        float LC;   // Length of L to the C
-        float RA;   // Length of R to the A
-        float RB;   // Length of R to the B
     };
 
 //
@@ -355,18 +351,8 @@
 
         done_with_scanning:
 
-        // Computing the results
-        const auto LA =
-            vertex_lenght( L, A );
-        const auto LC =
-            vertex_lenght( L, C );
-        const auto RA =
-            vertex_lenght( R, A );
-        const auto RB =
-            vertex_lenght( R, B );
-
         const struct Scann_Line_Info result =
-            { L, R, LA, LC, RA, RB };
+            { L, R };
 
         // done
         return result;
