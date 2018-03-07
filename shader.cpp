@@ -1,5 +1,52 @@
 
 //
+// Copyright 2018-present, Pouya Kary. All Rights Reserved. <pouya@kary.us>
+//
+
+//
+//   ┌──────────────────────────────────────────────────────────────────────────┐
+//   │ ****************************  View Buffer  ***************************** │
+//   ├──────────────────────────────────────────────────────────────────────────┤
+//   │                                                                          │
+//   │                                 ┌───┐                                    │
+//   │                                 │ A │                                    │
+//   │                                 └───┘                                    │
+//   │                                  ╱╲                                      │
+//   │                                 ╱  ╲                                     │
+//   │                                ╱    ╲                                    │
+//   │                               ╱      ╲                                   │
+//   │                              ╱        ╲                                  │
+//   │                             ╱          ╲                                 │
+//   │                            ╱            ╲                                │
+//   │                           ╱              ╲                               │
+//   │                          ╱                ╲                              │
+//   │                 ┌───┐   ╱                  ╲    ┌───┐                    │
+//   │                 │ L │  ╱                    ╲   │ R │                    │
+//   │                 └───┘ ╱                      ╲  └───┘                    │
+//   ├──────────────────────╳─────────────*──────────╳──────────────────────────┤
+//   │                     ╱          ┌───┐           ╲                         │
+//   │                    ╱           │ S │            ╲                        │
+//   │                   ╱            └───┘             ╲                       │
+//   │                  ╱                                ╲                      │
+//   │                 ╱                                  ╲                     │
+//   │                ╱                                    ╲                    │
+//   │               ╱                                      ╲                   │
+//   │              ╱                                        ╲                  │
+//   │             ╱                                          ╲                 │
+//   │            ╱                                            ╲                │
+//   │           ╱─────────┐                                    ╲               │
+//   │       ┌───┐         └──────────┐                          ╲              │
+//   │       │ C │                    └──────────┐                ╲             │
+//   │       └───┘                               └─────────┐       ╲            │
+//   │                                                     └────────╲           │
+//   │                                                               ┌───┐      │
+//   │                                                               │ B │      │
+//   │                                                               └───┘      │
+//   │                                                                          │
+//   └──────────────────────────────────────────────────────────────────────────┘
+//
+
+//
 // ─── IMPORTS ────────────────────────────────────────────────────────────────────
 //
 
@@ -20,13 +67,29 @@
 //
 
     struct Point {
-        float x;
-        float y;
+        float x; float y;
     };
 
     struct Line {
-        Point start;
-        Point end;
+        Point start; Point end;
+    };
+
+    struct RGBA {
+        float R; float G; float B;  float A;
+    };
+
+    struct Triangle_Info {
+        float starting_x;   float starting_y;
+        float ending_x;     float ending_y;
+    };
+
+    struct Scann_Line_Info {
+        Point L;    // Left  point of intersection in scanning line with triangle
+        Point R;    // Right point of intersection in scanning line with triangle
+        float LA;   // Length of L to the A
+        float LC;   // Length of L to the C
+        float RA;   // Length of R to the A
+        float RB;   // Length of R to the B
     };
 
 //
@@ -40,27 +103,42 @@
         500;
 
     // triangle
-    const struct Point top_position =
+    const struct Point A =
         { 400, 100 };
-    const struct Point bottom_left_position =
-        { 300, 400 };
-    const struct Point bottom_right_position =
-        { 600, 350 };
+    const struct Point C =
+        { 200, 400 };
+    const struct Point B =
+        { 600, 400 };
 
     // trangle edges
-    const struct Line edge1 =
-        { top_position, bottom_left_position };
-    const struct Line edge2 =
-        { bottom_left_position, bottom_right_position };
-    const struct Line edge3 =
-        { bottom_right_position, top_position };
-
+    const struct Line AC =
+        { A, C };
+    const struct Line CB =
+        { C, B };
+    const struct Line BA =
+        { B, A };
     const std::vector<Line> edges =
-        { edge1, edge2, edge3 };
+        { AC, CB, BA };
 
     // origin
     const struct Point origin =
         { 0, 0 };
+
+    // Lighting
+    const struct RGBA A_Lighting =
+        { 1.0, 0.0, 0.0, 1.0 };
+    const struct RGBA C_Lighting =
+        { 0.0, 1.0, 0.0, 0.8 };
+    const struct RGBA B_Lighting =
+        { 0.0, 0.0, 1.0, 0.5 };
+
+//
+// ─── VECTOR LENGHT ──────────────────────────────────────────────────────────────
+//
+
+    float vertex_lenght ( Point a, Point b ) {
+        return abs( sqrt( pow( b.x - a.x, 2 ) + pow( b.y - a.y, 2 ) ) );
+    }
 
 //
 // ─── DO LINES INTERSECT ─────────────────────────────────────────────────────────
@@ -84,35 +162,11 @@
         return first_condition && second_condition;
     }
 
-
-//
-// ─── KARY TABESH CURVE TEST ─────────────────────────────────────────────────────
-//
-
-    bool test_interpolation_using_kary_tabesh_curve ( Point point ) {
-        const Line test_line =
-            { origin, point };
-
-        int sign = 1;
-        for ( auto edge : edges )
-            if ( lines_are_intesecting( test_line, edge ) )
-                sign = sign * -1;
-
-        return sign == -1;
-    }
-
 //
 // ─── SCREEN MINIMUM ─────────────────────────────────────────────────────────────
 //
 
-    struct Triangle_Information {
-        float starting_x;
-        float starting_y;
-        float ending_x;
-        float ending_y;
-    };
-
-    Triangle_Information get_triangle_info ( ) {
+    Triangle_Info get_triangle_info ( ) {
         float minimum_x = screen_width;
         float minimum_y = screen_height;
         float maximum_x = 0.0;
@@ -130,9 +184,86 @@
             if ( maximum_y < y ) maximum_y = y;
         }
 
-        const Triangle_Information result =
+        const Triangle_Info result =
             { minimum_x, minimum_y, maximum_x, maximum_y };
 
+        return result;
+    }
+
+//
+// ─── COMPUTE COLOR ON POSITION ──────────────────────────────────────────────────
+//
+
+    RGBA compute_color_on_position ( float x, float y, Scann_Line_Info scann_line ) {
+        const struct RGBA color =
+            { 1.0, 0.0, 0.0, 1.0 };
+
+        return color;
+    }
+
+//
+// ─── SET COLOR BASED ON POSITION ────────────────────────────────────────────────
+//
+
+    void set_color_based_on_position ( float x, float y, Scann_Line_Info line ) {
+        if ( line.L.x <= x && line.R.x >= x ) {
+            // const auto color =
+            //     compute_color_on_position( x, y, line );
+
+            glColor3f( 1.0, 0.0, 0.0 );
+        } else {
+            glColor3f( 0.0, 0.0, 0.0 );
+        }
+    }
+
+//
+// ─── GET SCANNING LINE INFORMATION ──────────────────────────────────────────────
+//
+
+    Scann_Line_Info get_scann_line_info ( float line_number, Triangle_Info info ) {
+        struct Point L =
+            { 0.0, line_number };
+        struct Point R =
+            { screen_width - 1, line_number };
+        bool found_L =
+            false;
+
+        // getting the L and R
+        for ( float x = info.starting_x - 1; x <= info.ending_x; x++ ) {
+            const struct Point origin =
+                { 0, line_number };
+            const struct Point current_position =
+                { x, line_number };
+            const struct Line checking_line =
+                { origin, current_position };
+
+            if ( !found_L && lines_are_intesecting( checking_line, AC ) ) {
+                L.x = x;
+                found_L = true;
+            }
+
+            if ( lines_are_intesecting( checking_line, BA ) ) {
+                R.x = x;
+                goto done_with_scanning;
+            }
+        }
+
+        done_with_scanning:
+
+        // Computing the results
+        const auto LA =
+            vertex_lenght( L, A );
+        const auto LC =
+            vertex_lenght( L, C );
+        const auto RA =
+            vertex_lenght( R, A );
+        const auto RB =
+            vertex_lenght( R, B );
+
+        const struct Scann_Line_Info result =
+            { L, R, LA, LC, RA, RB };
+
+        // done
         return result;
     }
 
@@ -144,13 +275,13 @@
         const auto info =
             get_triangle_info( );
 
-        for ( auto x = info.starting_x; x < info.ending_x; x++ ) {
-            for ( auto y = info.starting_y; y < info.ending_y; y++ ) {
-                const struct Point point =
-                    { x, y };
+        for ( auto y = info.starting_y + 1; y <= info.ending_y; y++ ) {
+            const struct Scann_Line_Info line_info =
+                get_scann_line_info( y, info );
 
-                if ( test_interpolation_using_kary_tabesh_curve( point ) )
-                    glVertex2f( point.x, point.y );
+            for ( auto x = info.starting_x; x <= info.ending_x; x++ ) {
+                set_color_based_on_position( x, y, line_info );
+                glVertex2f( x, y );
             }
         }
     }
@@ -160,7 +291,7 @@
 //
 
     void display ( ) {
-        glColor4f( 1.0f , 0.0f , 0.0f, 0.3f );
+        // glColor4f( 1.0f , 0.0f , 0.0f, 0.3f );
         glBegin( GL_POINTS );
             optimal_triangle_drawing_loop( );
         glEnd( );
@@ -172,9 +303,9 @@
 //
 
     void init ( ) {
-        glClearColor( 0.0, 0.0, 0.0, 1.0 );
+        glClearColor( 0.0, 0.0, 0.0, 0.0 );
              glClear( GL_COLOR_BUFFER_BIT );
-           glColor4f( 1.0, 1.0, 1.0, 1.0 );
+           // glColor4f( 1.0, 1.0, 1.0, 1.0 );
              glOrtho( 0.f, screen_width, screen_height, 0.f, 0.f, 1.f );
     }
 
@@ -184,10 +315,10 @@
 
     int main ( int argc, char ** argv ) {
                       glutInit( &argc, argv );
-           glutInitDisplayMode( GLUT_SINGLE | GLUT_RGBA );
+           glutInitDisplayMode( GLUT_SINGLE | GLUT_RGB );
             glutInitWindowSize( screen_width, screen_height );
         glutInitWindowPosition( 100, 100);
-              glutCreateWindow( "Gourad Shader" );
+              glutCreateWindow( "The Very Basic Gradiant" );
                           init( );
                glutDisplayFunc( display );
                   glutMainLoop( );
