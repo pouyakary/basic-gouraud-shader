@@ -1,8 +1,12 @@
-build: shader.cpp
-	g++ -std=c++11 -o shader shader.cpp  -framework OpenGl -framework Glut
+
+name = "Kary's Gouraud Shader"
+file = shader.cpp
+
+build: $(file)
+	g++ -std=c++11 -o $(name) $(file)  -framework OpenGl -framework Glut
 
 run: build
-	./shader; rm ./shader
+	./$(name); rm ./$(name)
 
-clean: ./shader
-	rm ./shader
+clean: ./$(name)
+	rm ./$(name)
