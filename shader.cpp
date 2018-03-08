@@ -18,6 +18,7 @@
     #include <time.h>
     #include <iostream>
     #include <vector>
+    #include <thread>
 
 // ────────────────────────────────────────────────────────────────────────────────
 
@@ -133,10 +134,35 @@
     const struct RGBA B_Lighting =
         { 0.0, 0.0, 1.0, 1.0 };
 
+    const struct RGBA BLACK =
+        { 0.f, 0.f, 0.f, 0.f };
+
     const float ambient_light =
         0.1;
     const float stronging_ratio =
         4.f;
+
+    // threading
+    const auto cores =
+        std::thread::hardware_concurrency( );
+
+    RGBA ** screen_matrix;
+
+//
+// ─── INIT SCREEN MATRIX ─────────────────────────────────────────────────────────
+//
+
+    void init_screen_matrix ( ) {
+        screen_matrix =
+            new RGBA * [ screen_height ];
+
+        for( int i = 0; i < screen_height; i++ )
+            screen_matrix[ i ] = new RGBA[ screen_width ];
+
+        for ( int y = 0; y < screen_height; y++ )
+            for ( int x = 0; x < screen_width; x++ )
+                screen_matrix[ y ][ x ] = BLACK;
+    }
 
 //
 // ─── VECTOR LENGHT ──────────────────────────────────────────────────────────────
@@ -310,15 +336,11 @@
 //
 
     void set_color_based_on_position ( float x, float y, Scann_Line_Info line ) {
-        if ( line.L.x <= x && line.R.x >= x ) {
-            const auto color =
+        if ( line.L.x <= x && line.R.x >= x && line.L.y > 100 )
+            screen_matrix[ (int) y ][ (int) x ] =
                 compute_color_on_position( x, y, line );
-
-            glColor3f( color.R, color.G, color.B );
-
-        } else {
-            glColor3f( 0.f, 0.f, 0.f );
-        }
+        else
+            screen_matrix[ (int) y ][ (int) x ] = BLACK;
     }
 
 //
@@ -363,22 +385,69 @@
     }
 
 //
+// ─── DRAWING THREAD TASK ────────────────────────────────────────────────────────
+//
+
+    void drawing_thread_task ( float tast_start_line,
+                               float task_end_line,
+                               Triangle_Info info ) {
+
+        for ( auto y = tast_start_line; y <= task_end_line; y++ ) {
+            const struct Scann_Line_Info line_info =
+                get_scann_line_info( y, info );
+
+            for ( auto x = info.starting_x; x <= info.ending_x; x++ ) {
+                set_color_based_on_position( x, y, line_info );
+            }
+        }
+    }
+
+//
 // ─── OPTIMAL FOR ────────────────────────────────────────────────────────────────
 //
 
     void optimal_triangle_drawing_loop ( ) {
         const auto info =
             get_triangle_info( );
+        const auto range =
+            info.ending_y - info.starting_y;
+        const auto thread_grouping_size =
+            range / cores;
 
-        for ( auto y = info.starting_y + 1; y <= info.ending_y; y++ ) {
-            const struct Scann_Line_Info line_info =
-                get_scann_line_info( y, info );
+        for ( int thread_no = 0; thread_no < cores; thread_no++ ) {
+            const auto starting_line =
+                info.starting_y + thread_no * thread_grouping_size;
+            const auto ending_line =
+                info.starting_y + ( thread_no + 1 ) * thread_grouping_size;
 
-            for ( auto x = info.starting_x; x <= info.ending_x; x++ ) {
-                set_color_based_on_position( x, y, line_info );
-                glVertex2f( x, y );
-            }
+            std::cout << "Start: "<< starting_line << " End: " << ending_line << std::endl;
+
+            std::thread process (
+                drawing_thread_task, starting_line, ending_line, info
+            );
+
+            process.join( );
         }
+    }
+
+//
+// ─── DRAW MATRIX ────────────────────────────────────────────────────────────────
+//
+
+    void draw_screen_matix ( ) {
+        glClear( GL_COLOR_BUFFER_BIT );
+        glBegin( GL_POINTS );
+            for ( int y = 0; y < screen_height; y++ ) {
+                for ( int x = 0; x < screen_width; x++ ) {
+                    const auto color =
+                        screen_matrix[ y ][ x ];
+
+                    glColor3f( color.R, color.G, color.B );
+                    glVertex2f( x, y );
+                }
+            }
+        glEnd( );
+        glFlush( );
     }
 
 //
@@ -386,11 +455,8 @@
 //
 
     void display ( ) {
-        glClear( GL_COLOR_BUFFER_BIT );
-        glBegin( GL_POINTS );
-            optimal_triangle_drawing_loop( );
-        glEnd( );
-        glFlush( );
+        optimal_triangle_drawing_loop( );
+        draw_screen_matix( );
     }
 
 //
@@ -398,10 +464,12 @@
 //
 
     void init ( ) {
-        glClearColor( 0.f, 0.f, 0.f, 0.f );
-             glClear( GL_COLOR_BUFFER_BIT );
+               glClearColor( 0.f, 0.f, 0.f, 0.f );
+                    glClear( GL_COLOR_BUFFER_BIT );
            // glColor4f( 1.0, 1.0, 1.0, 1.0 );
-             glOrtho( 0.f, screen_width, screen_height, 0.f, 0.f, 1.f );
+                    glOrtho( 0.f, screen_width, screen_height, 0.f, 0.f, 1.f );
+
+         init_screen_matrix( );
     }
 
 //
