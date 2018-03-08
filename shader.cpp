@@ -416,7 +416,6 @@
               glutCreateWindow( "Pouya's Basic Gouraud Shader!" );
                           init( );
                glutDisplayFunc( display );
-                  glutIdleFunc( display );
                   glutMainLoop( );
 
         return 0;
