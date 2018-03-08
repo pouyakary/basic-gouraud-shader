@@ -135,8 +135,6 @@
     const struct RGBA BLACK =
         { 0.f, 0.f, 0.f, 0.f };
 
-    const float ambient_light =
-        0.1;
     const float stronging_ratio =
         4.f;
 
@@ -272,7 +270,9 @@
 //
 
     RGBA get_IR ( Point position ) {
-        return get_RGBA_on_linear_interpolation( position, A, B, A_Lighting, B_Lighting );
+        return get_RGBA_on_linear_interpolation(
+            position, A, B, A_Lighting, B_Lighting
+        );
     }
 
 //
@@ -280,7 +280,9 @@
 //
 
     RGBA get_IL ( Point position ) {
-        return get_RGBA_on_linear_interpolation( position, A, C, A_Lighting, C_Lighting );
+        return get_RGBA_on_linear_interpolation(
+            position, A, C, A_Lighting, C_Lighting
+        );
     }
 
 //
@@ -289,20 +291,19 @@
 
     RGBA get_IS ( Point position, RGBA IL, RGBA IR, Scann_Line_Info scann_line ) {
         return get_RGBA_on_linear_interpolation(
-            position, scann_line.L, scann_line.R, IL, IR );
+            position, scann_line.L, scann_line.R, IL, IR
+        );
     }
 
 //
 // ─── APPLY AMBIENT LIGHT ────────────────────────────────────────────────────────
 //
 
-    RGBA apply_ambint_light ( RGBA color ) {
-
-
+    RGBA sharpen_color ( RGBA color ) {
         const struct RGBA result = {
-            color.R * stronging_ratio + ambient_light,
-            color.G * stronging_ratio + ambient_light,
-            color.B * stronging_ratio + ambient_light,
+            color.R * stronging_ratio,
+            color.G * stronging_ratio,
+            color.B * stronging_ratio,
             color.A
         };
 
@@ -323,10 +324,10 @@
         const auto IS =
             get_IS( position, IL, IR, scann_line );
 
-        const auto color_with_ambint_light =
-            apply_ambint_light( IS );
+        const auto resulting_color =
+            sharpen_color( IS );
 
-        return color_with_ambint_light;
+        return resulting_color;
     }
 
 //
