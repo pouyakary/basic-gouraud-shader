@@ -382,7 +382,7 @@
 //
 
     void display ( ) {
-        // glColor4f( 1.0f , 0.f , 0.f, 0.3f );
+        glClear( GL_COLOR_BUFFER_BIT );
         glBegin( GL_POINTS );
             optimal_triangle_drawing_loop( );
         glEnd( );
@@ -412,6 +412,7 @@
               glutCreateWindow( "Pouya's Basic Gouraud Shader!" );
                           init( );
                glutDisplayFunc( display );
+                  glutIdleFunc( display );
                   glutMainLoop( );
 
         return 0;
