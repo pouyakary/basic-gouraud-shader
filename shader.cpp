@@ -134,7 +134,7 @@
         { 0.0, 0.0, 1.0, 1.0 };
 
     const float ambient_light =
-        0.0;
+        0.1;
 
 //
 // ─── VECTOR LENGHT ──────────────────────────────────────────────────────────────
@@ -313,7 +313,7 @@
             glColor3f( color.R, color.G, color.B );
 
         } else {
-            glColor3f( 0.0, 0.0, 0.0 );
+            glColor3f( 0.f, 0.f, 0.f );
         }
     }
 
@@ -323,7 +323,7 @@
 
     Scann_Line_Info get_scann_line_info ( float line_number, Triangle_Info info ) {
         struct Point L =
-            { 0.0, line_number };
+            { 0.f, line_number };
         struct Point R =
             { screen_width - 1, line_number };
         bool found_L =
@@ -332,7 +332,7 @@
         // getting the L and R
         for ( float x = info.starting_x - 1; x <= info.ending_x; x++ ) {
             const struct Point origin =
-                { 0, line_number };
+                { 0.f, line_number };
             const struct Point current_position =
                 { x, line_number };
             const struct Line checking_line =
@@ -382,7 +382,7 @@
 //
 
     void display ( ) {
-        // glColor4f( 1.0f , 0.0f , 0.0f, 0.3f );
+        // glColor4f( 1.0f , 0.f , 0.f, 0.3f );
         glBegin( GL_POINTS );
             optimal_triangle_drawing_loop( );
         glEnd( );
@@ -394,7 +394,7 @@
 //
 
     void init ( ) {
-        glClearColor( 0.0, 0.0, 0.0, 0.0 );
+        glClearColor( 0.f, 0.f, 0.f, 0.f );
              glClear( GL_COLOR_BUFFER_BIT );
            // glColor4f( 1.0, 1.0, 1.0, 1.0 );
              glOrtho( 0.f, screen_width, screen_height, 0.f, 0.f, 1.f );
