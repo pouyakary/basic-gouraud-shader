@@ -135,6 +135,8 @@
 
     const float ambient_light =
         0.1;
+    const float stronging_ratio =
+        4.f;
 
 //
 // ─── VECTOR LENGHT ──────────────────────────────────────────────────────────────
@@ -271,10 +273,12 @@
 //
 
     RGBA apply_ambint_light ( RGBA color ) {
+
+
         const struct RGBA result = {
-            color.R + ambient_light,
-            color.G + ambient_light,
-            color.B + ambient_light,
+            color.R * stronging_ratio + ambient_light,
+            color.G * stronging_ratio + ambient_light,
+            color.B * stronging_ratio + ambient_light,
             color.A
         };
 
