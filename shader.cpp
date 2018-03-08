@@ -15,8 +15,6 @@
     #endif
 
     #include <math.h>
-    #include <time.h>
-    #include <iostream>
     #include <vector>
     #include <thread>
 
@@ -419,8 +417,6 @@
                 info.starting_y + thread_no * thread_grouping_size;
             const auto ending_line =
                 info.starting_y + ( thread_no + 1 ) * thread_grouping_size;
-
-            std::cout << "Start: "<< starting_line << " End: " << ending_line << std::endl;
 
             std::thread process (
                 drawing_thread_task, starting_line, ending_line, info
