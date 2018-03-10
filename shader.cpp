@@ -87,7 +87,7 @@
         float ending_x;     float ending_y;
     };
 
-    struct Scann_Line_Info {
+    struct Scan_Line_Info {
         Point L;    // Left  point of intersection in scanning line with triangle
         Point R;    // Right point of intersection in scanning line with triangle
     };
@@ -110,7 +110,7 @@
     const struct Point B =
         { 600, 400 };
 
-    // trangle edges
+    // triangle edges
     const struct Line AC =
         { A, C };
     const struct Line CB =
@@ -161,10 +161,10 @@
     }
 
 //
-// ─── VECTOR LENGHT ──────────────────────────────────────────────────────────────
+// ─── VECTOR LENGTH ──────────────────────────────────────────────────────────────
 //
 
-    float vertex_lenght ( Point a, Point b ) {
+    float vertex_length ( Point a, Point b ) {
         return abs( sqrt( pow( b.x - a.x, 2 ) + pow( b.y - a.y, 2 ) ) );
     }
 
@@ -172,7 +172,7 @@
 // ─── DO LINES INTERSECT ─────────────────────────────────────────────────────────
 //
 
-    bool lines_are_intesecting( Line a, Line b ) {
+    bool are_lines_intersecting( Line a, Line b ) {
         const auto first_condition =
             ( (   ( b.start.x - a.start.x ) * ( a.end.y - a.start.y )
                 - ( b.start.y - a.start.y ) * ( a.end.x - a.start.x ) )
@@ -239,7 +239,7 @@
     }
 
 //
-// ─── COMPUTE SCANN LINE LIGHTS ──────────────────────────────────────────────────
+// ─── COMPUTE SCAN LINE LIGHTS ───────────────────────────────────────────────────
 //
 
     RGBA get_RGBA_on_linear_interpolation ( Point position,
@@ -248,11 +248,11 @@
                                             RGBA  up_color,
                                             RGBA  down_color ) {
         const auto up_distance =
-            vertex_lenght( up, position );
+            vertex_length( up, position );
         const auto down_distance =
-            vertex_lenght( down, position );
+            vertex_length( down, position );
         const auto up_down_size =
-            vertex_lenght( up, down );
+            vertex_length( up, down );
 
         const auto up_volume =
             up_distance / up_down_size;
@@ -289,9 +289,9 @@
 // ─── COMPUTE IS ─────────────────────────────────────────────────────────────────
 //
 
-    RGBA get_IS ( Point position, RGBA IL, RGBA IR, Scann_Line_Info scann_line ) {
+    RGBA get_IS ( Point position, RGBA IL, RGBA IR, Scan_Line_Info scan_line ) {
         return get_RGBA_on_linear_interpolation(
-            position, scann_line.L, scann_line.R, IL, IR
+            position, scan_line.L, scan_line.R, IL, IR
         );
     }
 
@@ -314,7 +314,7 @@
 // ─── COMPUTE COLOR ON POSITION ──────────────────────────────────────────────────
 //
 
-    RGBA compute_color_on_position ( float x, float y, Scann_Line_Info scann_line ) {
+    RGBA compute_color_on_position ( float x, float y, Scan_Line_Info scan_line ) {
         const struct Point position =
             { x, y };
         const auto IL =
@@ -322,7 +322,7 @@
         const auto IR =
             get_IR( position );
         const auto IS =
-            get_IS( position, IL, IR, scann_line );
+            get_IS( position, IL, IR, scan_line );
 
         const auto resulting_color =
             sharpen_color( IS );
@@ -334,7 +334,7 @@
 // ─── SET COLOR BASED ON POSITION ────────────────────────────────────────────────
 //
 
-    void set_color_based_on_position ( float x, float y, Scann_Line_Info line ) {
+    void set_color_based_on_position ( float x, float y, Scan_Line_Info line ) {
         if ( line.L.x <= x && line.R.x >= x && line.L.y > 100 )
             screen_matrix[ (int) y ][ (int) x ] =
                 compute_color_on_position( x, y, line );
@@ -346,7 +346,7 @@
 // ─── GET SCANNING LINE INFORMATION ──────────────────────────────────────────────
 //
 
-    Scann_Line_Info get_scann_line_info ( float line_number, Triangle_Info info ) {
+    Scan_Line_Info get_scan_line_info ( float line_number, Triangle_Info info ) {
         struct Point L =
             { 0.f, line_number };
         struct Point R =
@@ -363,12 +363,12 @@
             const struct Line checking_line =
                 { origin, current_position };
 
-            if ( !found_L && lines_are_intesecting( checking_line, AC ) ) {
+            if ( !found_L && are_lines_intersecting( checking_line, AC ) ) {
                 L.x = x;
                 found_L = true;
             }
 
-            if ( lines_are_intesecting( checking_line, BA ) ) {
+            if ( are_lines_intersecting( checking_line, BA ) ) {
                 R.x = x;
                 goto done_with_scanning;
             }
@@ -376,7 +376,7 @@
 
         done_with_scanning:
 
-        const struct Scann_Line_Info result =
+        const struct Scan_Line_Info result =
             { L, R };
 
         // done
@@ -387,13 +387,13 @@
 // ─── DRAWING THREAD TASK ────────────────────────────────────────────────────────
 //
 
-    void drawing_thread_task ( float tast_start_line,
+    void drawing_thread_task ( float test_start_line,
                                float task_end_line,
                                Triangle_Info info ) {
 
-        for ( auto y = tast_start_line; y <= task_end_line; y++ ) {
-            const struct Scann_Line_Info line_info =
-                get_scann_line_info( y, info );
+        for ( auto y = test_start_line; y <= task_end_line; y++ ) {
+            const struct Scan_Line_Info line_info =
+                get_scan_line_info( y, info );
 
             for ( auto x = info.starting_x; x <= info.ending_x; x++ ) {
                 set_color_based_on_position( x, y, line_info );
@@ -431,7 +431,7 @@
 // ─── DRAW MATRIX ────────────────────────────────────────────────────────────────
 //
 
-    void draw_screen_matix ( ) {
+    void draw_screen_matrix ( ) {
         glClear( GL_COLOR_BUFFER_BIT );
         glBegin( GL_POINTS );
             for ( int y = 0; y < screen_height; y++ ) {
@@ -453,7 +453,7 @@
 
     void display ( ) {
         optimal_triangle_drawing_loop( );
-        draw_screen_matix( );
+        draw_screen_matrix( );
     }
 
 //
@@ -478,7 +478,7 @@
            glutInitDisplayMode( GLUT_SINGLE | GLUT_RGB );
             glutInitWindowSize( screen_width, screen_height );
         glutInitWindowPosition( 100, 100);
-              glutCreateWindow( "Pouya's Basic Gouraud Shader!" );
+              glutCreateWindow( "Pouya's Basic Gouraud Interpolating Shader!" );
                           init( );
                glutDisplayFunc( display );
                   glutMainLoop( );
