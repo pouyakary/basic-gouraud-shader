@@ -164,7 +164,7 @@
 // ─── VECTOR LENGTH ──────────────────────────────────────────────────────────────
 //
 
-    float vertex_length ( Point a, Point b ) {
+    inline float vertex_length ( Point a, Point b ) {
         return abs( sqrt( pow( b.x - a.x, 2 ) + pow( b.y - a.y, 2 ) ) );
     }
 
@@ -269,7 +269,7 @@
 // ─── GET IR ─────────────────────────────────────────────────────────────────────
 //
 
-    RGBA get_IR ( Point position ) {
+    inline RGBA get_IR ( Point position ) {
         return get_RGBA_on_linear_interpolation(
             position, A, B, A_Lighting, B_Lighting
         );
@@ -279,7 +279,7 @@
 // ─── COMPUTE IR ─────────────────────────────────────────────────────────────────
 //
 
-    RGBA get_IL ( Point position ) {
+    inline RGBA get_IL ( Point position ) {
         return get_RGBA_on_linear_interpolation(
             position, A, C, A_Lighting, C_Lighting
         );
@@ -289,7 +289,7 @@
 // ─── COMPUTE IS ─────────────────────────────────────────────────────────────────
 //
 
-    RGBA get_IS ( Point position, RGBA IL, RGBA IR, Scan_Line_Info scan_line ) {
+    inline RGBA get_IS ( Point position, RGBA IL, RGBA IR, Scan_Line_Info scan_line ) {
         return get_RGBA_on_linear_interpolation(
             position, scan_line.L, scan_line.R, IL, IR
         );
@@ -299,15 +299,13 @@
 // ─── APPLY AMBIENT LIGHT ────────────────────────────────────────────────────────
 //
 
-    RGBA sharpen_color ( RGBA color ) {
-        const struct RGBA result = {
+    inline RGBA sharpen_color ( RGBA color ) {
+        return {
             color.R * stronging_ratio,
             color.G * stronging_ratio,
             color.B * stronging_ratio,
             color.A
         };
-
-        return result;
     }
 
 //
@@ -460,7 +458,7 @@
 // ─── INIT ───────────────────────────────────────────────────────────────────────
 //
 
-    void init ( ) {
+    inline void init ( ) {
                glClearColor( 0.f, 0.f, 0.f, 0.f );
                     glClear( GL_COLOR_BUFFER_BIT );
            // glColor4f( 1.0, 1.0, 1.0, 1.0 );
