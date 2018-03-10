@@ -1,6 +1,8 @@
 {
     "files.associations": {
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "__functional_03": "cpp",
+        "functional": "cpp"
     },
     "cSpell.words": [
         "Gouraud",
