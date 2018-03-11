@@ -128,9 +128,9 @@
     const struct RGBA A_Lighting =
         { 0.6, 0.0, 1.0 };
     const struct RGBA C_Lighting =
-        { 0.0, 1.0, 1.0 };
+        { 0.0, 0.0, 0.0 };
     const struct RGBA B_Lighting =
-        { 1.0, 0.0, 1.0 };
+        { 0.0, 0.0, 0.0 };
 
     const struct RGBA BLACK =
         { 0.f, 0.f, 0.f };
