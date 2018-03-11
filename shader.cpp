@@ -79,7 +79,7 @@
     };
 
     struct RGBA {
-        float R; float G; float B;  float A;
+        float R; float G; float B;
     };
 
     struct Triangle_Info {
@@ -126,14 +126,14 @@
 
     // Lighting
     const struct RGBA A_Lighting =
-        { 1.0, 0.0, 0.0, 1.0 };
+        { 0.6, 0.0, 1.0 };
     const struct RGBA C_Lighting =
-        { 0.0, 1.0, 0.0, 1.0};
+        { 0.0, 1.0, 1.0 };
     const struct RGBA B_Lighting =
-        { 0.0, 0.0, 1.0, 1.0 };
+        { 1.0, 0.0, 1.0 };
 
     const struct RGBA BLACK =
-        { 0.f, 0.f, 0.f, 0.f };
+        { 0.f, 0.f, 0.f };
 
     const float stronging_ratio =
         4.f;
@@ -229,11 +229,9 @@
             ( ( color_a.G * volume_b ) + ( color_b.G * volume_a ) ) / 2;
         const auto new_B =
             ( ( color_a.B * volume_b ) + ( color_b.B * volume_a ) ) / 2;
-        const auto new_A =
-            ( ( color_a.A * volume_b ) + ( color_b.A * volume_a ) ) / 2;
 
         const struct RGBA result =
-            { new_R, new_G, new_B, new_A };
+            { new_R, new_G, new_B };
 
         return result;
     }
@@ -303,8 +301,7 @@
         return {
             color.R * stronging_ratio,
             color.G * stronging_ratio,
-            color.B * stronging_ratio,
-            color.A
+            color.B * stronging_ratio
         };
     }
 
@@ -333,7 +330,7 @@
 //
 
     void set_color_based_on_position ( float x, float y, Scan_Line_Info line ) {
-        if ( line.L.x <= x && line.R.x >= x && line.L.y > 100 )
+        if ( line.L.x <= x && line.R.x >= x && line.L.y > 100 && line.L.y < 400 )
             screen_matrix[ (int) y ][ (int) x ] =
                 compute_color_on_position( x, y, line );
         else
