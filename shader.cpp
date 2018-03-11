@@ -224,13 +224,13 @@
 
     RGBA combine_colors ( RGBA color_a, float volume_a, RGBA color_b, float volume_b ) {
         const auto new_R =
-            ( ( color_a.R * volume_a ) + ( color_b.R * volume_b ) ) / 2;
+            ( ( color_a.R * volume_b ) + ( color_b.R * volume_a ) ) / 2;
         const auto new_G =
-            ( ( color_a.G * volume_a ) + ( color_b.G * volume_b ) ) / 2;
+            ( ( color_a.G * volume_b ) + ( color_b.G * volume_a ) ) / 2;
         const auto new_B =
-            ( ( color_a.B * volume_a ) + ( color_b.B * volume_b ) ) / 2;
+            ( ( color_a.B * volume_b ) + ( color_b.B * volume_a ) ) / 2;
         const auto new_A =
-            ( ( color_a.A * volume_a ) + ( color_b.A * volume_b ) ) / 2;
+            ( ( color_a.A * volume_b ) + ( color_b.A * volume_a ) ) / 2;
 
         const struct RGBA result =
             { new_R, new_G, new_B, new_A };
