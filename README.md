@@ -12,7 +12,7 @@ This is the normal shader. Both of the bottom sides are black and therefore the 
 
 
 
-This is if you change the `volume_a` and `volume_b` in the [combine_colors](https://github.com/pmkary/gouraud-shader/blob/master/shader.cpp#L227-L233) function and set pure red, green and blue as light sources:
+This is if you change the `volume_a` and `volume_b` in the [combine_colors](https://github.com/pmkary/gouraud-shader/blob/master/shader.cpp#L232-L244) function and set pure red, green and blue as light sources:
 
 ![](https://user-images.githubusercontent.com/2157285/37142964-ea27c0de-22ce-11e8-93cb-e907c9477af3.png)
 
