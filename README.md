@@ -22,6 +22,3 @@ You must have LLVM or GCC on your system with support of C++11 at least. Also yo
 ```
 % make run
 ```
-
-## Acknowledgments
-Henri Gouraud for finding the algorithm! and Dr. Pourbenyamin for helping me fix the algorithm.
